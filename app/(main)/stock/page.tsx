@@ -18,6 +18,9 @@ export default function StockPage() {
         <Button asChild className="w-full">
           <Link href="/stock/lookup">Stock Lookup</Link>
         </Button>
+        <Button asChild className="w-full">
+          <Link href="/stock/history">Stock History</Link>
+        </Button>
       </div>
     </>
   )

@@ -404,88 +404,129 @@ export function SKUTable({ items: initialItems, companies }: SKUTableProps) {
       </div>
 
       {/* Edit Dialog */}
-      <Dialog open={!!editingItem} onOpenChange={() => setEditingItem(null)}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Edit Item</DialogTitle>
-          </DialogHeader>
-          <form onSubmit={handleEditSubmit}>
-            <div className="space-y-4 py-4">
-              <div className="space-y-2">
-                <Label htmlFor="sku">SKU</Label>
-                <Input
-                  id="sku"
-                  value={editingItem?.sku || ''}
-                  onChange={(e) => setEditingItem(prev => 
+    <Dialog open={!!editingItem} onOpenChange={() => setEditingItem(null)}>
+      <DialogContent className="max-w-lg p-6 space-y-6">
+        <DialogHeader>
+          <DialogTitle className="text-lg font-semibold">Edit Item</DialogTitle>
+        </DialogHeader>
+        <form onSubmit={handleEditSubmit}>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="sku" className="block text-sm font-medium">
+                SKU
+              </Label>
+              <Input
+                id="sku"
+                className="mt-2 block w-full rounded-md border-gray-300 shadow-sm focus:border-gray-500 focus:ring-gray-500"
+                value={editingItem?.sku || ''}
+                onChange={(e) =>
+                  setEditingItem((prev) =>
                     prev ? { ...prev, sku: e.target.value } : null
-                  )}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="name">Name</Label>
-                <Input
-                  id="name"
-                  value={editingItem?.name || ''}
-                  onChange={(e) => setEditingItem(prev => 
-                    prev ? { ...prev, name: e.target.value } : null
-                  )}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="barcode">Barcode</Label>
-                <Input
-                  id="barcode"
-                  value={editingItem?.barcode || ''}
-                  onChange={(e) => setEditingItem(prev => 
-                    prev ? { ...prev, barcode: e.target.value } : null
-                  )}
-                />
-              </div>
+                  )
+                }
+                placeholder="Enter SKU"
+              />
             </div>
-            <DialogFooter>
-              <Button type="submit">Save changes</Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
-
-      {/* Delete Confirmation Dialog */}
-      <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Confirm Deletion</DialogTitle>
-          </DialogHeader>
-          <div className="py-4">
-            <p>Are you sure you want to delete this item?</p>
-            {dependencies && (dependencies.stockCount > 0 || dependencies.transactionCount > 0) && (
-              <div className="mt-4 p-4 bg-destructive/10 rounded-md">
-                <p className="font-semibold text-destructive">Warning:</p>
-                <p>This will also delete:</p>
-                <ul className="list-disc list-inside mt-2">
-                  {dependencies.stockCount > 0 && (
-                    <li>{dependencies.stockCount} stock record{dependencies.stockCount !== 1 ? 's' : ''}</li>
-                  )}
-                  {dependencies.transactionCount > 0 && (
-                    <li>{dependencies.transactionCount} transaction{dependencies.transactionCount !== 1 ? 's' : ''}</li>
-                  )}
-                </ul>
-              </div>
-            )}
-            <p className="mt-4 text-muted-foreground">This action cannot be undone.</p>
+            <div>
+              <Label htmlFor="name" className="block text-sm font-medium">
+                Name
+              </Label>
+              <Input
+                id="name"
+                className="mt-2 block w-full rounded-md border-gray-300 shadow-sm focus:border-gray-500 focus:ring-gray-500"
+                value={editingItem?.name || ''}
+                onChange={(e) =>
+                  setEditingItem((prev) =>
+                    prev ? { ...prev, name: e.target.value } : null
+                  )
+                }
+                placeholder="Enter item name"
+              />
+            </div>
+            {/* Barcode Input */}
+            <div>
+              <Label htmlFor="barcode" className="block text-sm font-medium">
+                Barcode
+              </Label>
+              <Input
+                id="barcode"
+                className="mt-2 block w-full rounded-md border-gray-300 shadow-sm focus:border-gray-500 focus:ring-gray-500"
+                value={editingItem?.barcode || ''}
+                onChange={(e) =>
+                  setEditingItem((prev) =>
+                    prev ? { ...prev, barcode: e.target.value } : null
+                  )
+                }
+                placeholder="Enter barcode"
+              />
+            </div>
           </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => {
-              setIsDeleteDialogOpen(false)
-              setDependencies(null)
-            }}>
+          <DialogFooter className="mt-6 flex justify-end gap-4">
+            <Button
+              variant="outline"
+              type="button"
+              onClick={() => setEditingItem(null)}
+            >
               Cancel
             </Button>
-            <Button variant="destructive" onClick={handleDelete}>
-              Delete
+            <Button
+              type="submit"
+              disabled={!editingItem?.sku?.trim() || !editingItem?.name?.trim()}
+            >
+              Save Changes
             </Button>
           </DialogFooter>
-        </DialogContent>
-      </Dialog>
+        </form>
+      </DialogContent>
+    </Dialog>
+    {/* Delete Confirmation Dialog */}
+    <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+      <DialogContent className="max-w-md p-6 space-y-6">
+        <DialogHeader>
+          <DialogTitle className="text-lg font-semibold">Confirm Deletion</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-4">
+          <p>Are you sure you want to delete this item?</p>
+          {dependencies && (dependencies.stockCount > 0 || dependencies.transactionCount > 0) && (
+            <div className="p-4 rounded-md border border-gray-300">
+              <p className="text-sm font-medium">Warning:</p>
+              <p className="text-sm mt-2">
+                This will also delete:
+              </p>
+              <ul className="list-disc list-inside mt-2 text-sm">
+                {dependencies.stockCount > 0 && (
+                  <li>
+                    {dependencies.stockCount} stock record
+                    {dependencies.stockCount !== 1 ? 's' : ''}
+                  </li>
+                )}
+                {dependencies.transactionCount > 0 && (
+                  <li>
+                    {dependencies.transactionCount} transaction
+                    {dependencies.transactionCount !== 1 ? 's' : ''}
+                  </li>
+                )}
+              </ul>
+            </div>
+          )}
+          <p className="text-sm text-gray-500">This action cannot be undone.</p>
+        </div>
+        <DialogFooter className="mt-6 flex justify-end gap-4">
+          <Button
+            variant="outline"
+            onClick={() => {
+              setIsDeleteDialogOpen(false)
+              setDependencies(null)
+            }}
+          >
+            Cancel
+          </Button>
+          <Button variant="destructive" onClick={handleDelete}>
+            Delete
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
     </div>
   )
 } 
