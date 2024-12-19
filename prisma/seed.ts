@@ -1,23 +1,54 @@
-import { PrismaClient, UserRole } from '@prisma/client'
+import { PrismaClient } from '@prisma/client';
 
-const prisma = new PrismaClient()
+const prisma = new PrismaClient();
+
+// Constants for roles and transaction types
+const USER_ROLES = {
+  ADMIN: 'ADMIN',
+  STAFF: 'STAFF'
+} as const;
+
+const TRANSACTION_TYPES = {
+  ADD: 'ADD',
+  REMOVE: 'REMOVE',
+  MOVE: 'MOVE'
+} as const;
 
 async function main() {
   // Clear existing data
-  await prisma.transaction.deleteMany()
-  await prisma.putawayBatch.deleteMany()
-  await prisma.stock.deleteMany()
-  await prisma.item.deleteMany()
-  await prisma.user.deleteMany()
-  await prisma.location.deleteMany()
-  await prisma.company.deleteMany()
+  await prisma.transaction.deleteMany();
+  await prisma.putawayBatch.deleteMany();
+  await prisma.stock.deleteMany();
+  await prisma.item.deleteMany();
+  await prisma.user.deleteMany();
+  await prisma.location.deleteMany();
+  await prisma.company.deleteMany();
+
+  // Clear existing data
+  console.log('Clearing existing data...');
+  await prisma.transaction.deleteMany();
+  // ... other deletes ...
+
+  // After creating transactions
+  const transactionCount = await prisma.transaction.count();
+  console.log(`Verified ${transactionCount} transactions in database`);
+
+  // Query one transaction to verify data
+  const sampleTransaction = await prisma.transaction.findFirst({
+    include: {
+      item: true,
+      fromLocation: true,
+      toLocation: true
+    }
+  });
+  console.log('Sample transaction:', sampleTransaction);
 
   // Create test company
   const company = await prisma.company.create({
     data: {
       code: 'TEST'
     }
-  })
+  });
 
   // Create test locations
   const locations = await Promise.all([
@@ -39,17 +70,17 @@ async function main() {
         type: 'STANDARD'
       }
     })
-  ])
+  ]);
 
   // Create test user
   const user = await prisma.user.create({
     data: {
       username: 'test',
-      passwordHash: 'test123', // In real app, this should be properly hashed
-      role: UserRole.ADMIN,
+      passwordHash: 'test123',
+      role: 'ADMIN',
       companyId: company.id
     }
-  })
+  });
 
   // Create test items
   const items = await Promise.all([
@@ -69,7 +100,7 @@ async function main() {
         companyId: company.id
       }
     })
-  ])
+  ]);
 
   // Create test stock
   await Promise.all([
@@ -87,16 +118,98 @@ async function main() {
         quantity: 5
       }
     })
-  ])
+  ]);
 
-  console.log('Database seeded successfully')
+  // Add transactions
+  const now = new Date();
+  const transactions = await Promise.all([
+    // ADD transaction
+    prisma.transaction.create({
+      data: {
+        type: TRANSACTION_TYPES.ADD,
+        quantity: 15,
+        itemId: items[0].id,
+        toLocationId: locations[0].id,
+        userId: user.id,
+        createdAt: new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000) // 7 days ago
+      }
+    }),
+
+    // REMOVE transaction
+    prisma.transaction.create({
+      data: {
+        type: TRANSACTION_TYPES.REMOVE,
+        quantity: 5,
+        itemId: items[0].id,
+        fromLocationId: locations[0].id,
+        userId: user.id,
+        createdAt: new Date(now.getTime() - 5 * 24 * 60 * 60 * 1000) // 5 days ago
+      }
+    }),
+
+    // MOVE transaction
+    prisma.transaction.create({
+      data: {
+        type: TRANSACTION_TYPES.MOVE,
+        quantity: 3,
+        itemId: items[0].id,
+        fromLocationId: locations[0].id,
+        toLocationId: locations[1].id,
+        userId: user.id,
+        createdAt: new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000) // 3 days ago
+      }
+    }),
+
+    // UNDONE transaction
+    prisma.transaction.create({
+      data: {
+        type: TRANSACTION_TYPES.REMOVE,
+        quantity: 2,
+        itemId: items[1].id,
+        fromLocationId: locations[1].id,
+        userId: user.id,
+        status: 'UNDONE',
+        createdAt: new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000), // 2 days ago
+        undoneAt: new Date(now.getTime() - 1 * 24 * 60 * 60 * 1000) // 1 day ago
+      }
+    }),
+
+    // Recent ADD transaction
+    prisma.transaction.create({
+      data: {
+        type: TRANSACTION_TYPES.ADD,
+        quantity: 8,
+        itemId: items[1].id,
+        toLocationId: locations[1].id,
+        userId: user.id,
+        createdAt: new Date() // Today
+      }
+    }),
+
+    // Recent MOVE transaction
+    prisma.transaction.create({
+      data: {
+        type: TRANSACTION_TYPES.MOVE,
+        quantity: 4,
+        itemId: items[1].id,
+        fromLocationId: locations[1].id,
+        toLocationId: locations[0].id,
+        userId: user.id,
+        createdAt: new Date(now.getTime() - 1 * 60 * 60 * 1000) // 1 hour ago
+      }
+    })
+  ]);
+
+  console.log('Database seeded successfully');
+  console.log(`Created ${transactions.length} transactions`);
 }
 
 main()
   .catch((e) => {
-    console.error(e)
-    process.exit(1)
+    console.error(e);
+    // Instead of process.exit(1), just throw the error
+    throw e;
   })
   .finally(async () => {
-    await prisma.$disconnect()
-  }) 
+    await prisma.$disconnect();
+  });
