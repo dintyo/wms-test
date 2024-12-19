@@ -3,8 +3,8 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = "file:./dev.db"
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 model Location {
@@ -69,20 +69,23 @@ model Stock {
 }
 
 model Transaction {
-  id             String          @id @default(cuid())
+  id             String            @id @default(cuid())
   quantity       Int
   type           TransactionType
-  createdAt      DateTime        @default(now())
+  status         TransactionStatus @default(COMPLETED)
+  createdAt      DateTime          @default(now())
   itemId         String
   fromLocationId String?
   toLocationId   String?
   userId         String?
   putawayBatchId String?
-  fromLocation   Location?       @relation("FromLocation", fields: [fromLocationId], references: [id])
-  item           Item            @relation(fields: [itemId], references: [id])
-  putawayBatch   PutawayBatch?   @relation(fields: [putawayBatchId], references: [id])
-  toLocation     Location?       @relation("ToLocation", fields: [toLocationId], references: [id])
-  user           User?           @relation(fields: [userId], references: [id])
+  fromLocation   Location?         @relation("FromLocation", fields: [fromLocationId], references: [id])
+  item           Item              @relation(fields: [itemId], references: [id])
+  putawayBatch   PutawayBatch?     @relation(fields: [putawayBatchId], references: [id])
+  toLocation     Location?         @relation("ToLocation", fields: [toLocationId], references: [id])
+  user           User?             @relation(fields: [userId], references: [id])
+  undoneAt       DateTime?
+  undoneBy       String?
 
   @@index([itemId])
   @@index([fromLocationId])
@@ -122,6 +125,11 @@ enum TransactionType {
   ADD
   REMOVE
   MOVE
+}
+
+enum TransactionStatus {
+  COMPLETED
+  UNDONE
 }
 
 enum UserRole {
