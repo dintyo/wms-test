@@ -3,8 +3,8 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = "file:./dev.db"
+  provider = "postgres"
+  url      = "postgresql://postgres:password@localhost:5432/mydatabase"
 }
 
 model Location {
@@ -83,6 +83,11 @@ model Transaction {
   putawayBatch   PutawayBatch?   @relation(fields: [putawayBatchId], references: [id])
   toLocation     Location?       @relation("ToLocation", fields: [toLocationId], references: [id])
   user           User?           @relation(fields: [userId], references: [id])
+
+ // New fields
+  status         String          @default("COMPLETED") // Completed or Undone
+  undoneAt       DateTime?       // Timestamp when the transaction was undone
+  undoneBy       String?         // User ID who performed the undo action
 
   @@index([itemId])
   @@index([fromLocationId])
