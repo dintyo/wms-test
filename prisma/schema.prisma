@@ -86,6 +86,8 @@ model Transaction {
   user           User?             @relation(fields: [userId], references: [id])
   undoneAt       DateTime?
   undoneBy       String?
+  redoneAt       DateTime?
+  redoneBy       String?
 
   @@index([itemId])
   @@index([fromLocationId])
@@ -130,6 +132,7 @@ enum TransactionType {
 enum TransactionStatus {
   COMPLETED
   UNDONE
+  REDONE
 }
 
 enum UserRole {

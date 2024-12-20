@@ -13,6 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { TransactionStatus } from "@prisma/client";
 
 interface Transaction {
   id: string;
@@ -37,6 +38,7 @@ export default function StockHistoryPage() {
   const [filteredTransactions, setFilteredTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
   const [undoLoading, setUndoLoading] = useState(false);
+  const [redoLoading, setRedoLoading] = useState(false);
 
   const [searchQuery, setSearchQuery] = useState("");
   const [sortOption, setSortOption] = useState<"type" | "status" | "createdAt">("createdAt");
@@ -48,7 +50,7 @@ export default function StockHistoryPage() {
         if (!response.ok) throw new Error("Failed to fetch transactions");
         const data = await response.json();
         setTransactions(data);
-        setFilteredTransactions(data); // Initialize filtered transactions
+        setFilteredTransactions(data);
       } catch (error) {
         console.error("Failed to fetch transactions:", error);
         toast({
@@ -80,7 +82,12 @@ export default function StockHistoryPage() {
         });
         setTransactions((prev) =>
           prev.map((txn) =>
-            txn.id === transactionId ? { ...txn, status: "UNDONE" } : txn
+            txn.id === transactionId ? { ...txn, status: TransactionStatus.UNDONE } : txn
+          )
+        );
+        setFilteredTransactions((prev) =>
+          prev.map((txn) =>
+            txn.id === transactionId ? { ...txn, status: TransactionStatus.UNDONE } : txn
           )
         );
       } else {
@@ -100,6 +107,51 @@ export default function StockHistoryPage() {
       });
     } finally {
       setUndoLoading(false);
+    }
+  };
+
+  const handleRedo = async (transactionId: string) => {
+    setRedoLoading(true);
+    try {
+      const response = await fetch(`/api/transactions/redo/${transactionId}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId: "user123" }),
+      });
+
+      if (response.ok) {
+        toast({
+          title: "Success",
+          description: "Transaction redone successfully",
+        });
+        setTransactions((prev) =>
+          prev.map((txn) =>
+            txn.id === transactionId ? { ...txn, status: TransactionStatus.REDONE } : txn
+          )
+        );
+
+        setFilteredTransactions((prev) =>
+          prev.map((txn) =>
+            txn.id === transactionId ? { ...txn, status: TransactionStatus.REDONE } : txn
+          )
+        );
+      } else {
+        const { error } = await response.json();
+        toast({
+          title: "Error",
+          description: error || "Failed to redo transaction",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error("Failed to redo transaction:", error);
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred",
+        variant: "destructive",
+      });
+    } finally {
+      setRedoLoading(false);
     }
   };
 
@@ -160,7 +212,7 @@ export default function StockHistoryPage() {
             value={sortOption}
             onValueChange={(value) => handleSort(value as "type" | "status" | "createdAt")}
           >
-            <SelectTrigger id="sort" className="max-w-xs text-sm px-8 py-2">
+            <SelectTrigger id="sort" className="w-xs text-sm px-8 py-2">
               <SelectValue placeholder="Select..." />
             </SelectTrigger>
             <SelectContent>
@@ -175,7 +227,9 @@ export default function StockHistoryPage() {
         <StockHistory
           transactions={filteredTransactions}
           onUndo={handleUndo}
-          loading={undoLoading}
+          onRedo={handleRedo}
+          undoLoading={undoLoading}
+          redoLoading={redoLoading}
         />
       ) : (
         <p className="text-gray-500">No transactions found.</p>

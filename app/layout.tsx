@@ -31,7 +31,9 @@ export default function RootLayout({
           themes={["light", "dark", "rose", "blue", "green", "orange", "purple"]}
         >
           <div className="min-h-screen bg-background">
-            <Navbar />
+            <div className="sticky top-0 z-10">
+              <Navbar />
+            </div>
             <main className="container max-w-[1920px] py-4 md:py-8">
               {children}
             </main>
