@@ -31,12 +31,12 @@ export async function POST(request: Request) {
     const result = await prisma.$transaction(async (tx) => {
       const updates = []
 
-      // Check and update each stock record
+      // Check and update each stock record, and create transactions
       for (const item of items) {
         // Get current stock record
         const currentStock = await tx.stock.findUnique({
           where: { id: item.stockId },
-          include: { item: true }
+          include: { item: true, location: true },
         })
 
         if (!currentStock) {
@@ -54,13 +54,24 @@ export async function POST(request: Request) {
           where: { id: item.stockId },
           data: {
             quantity: {
-              decrement: item.quantity
-            }
+              decrement: item.quantity,
+            },
           },
           include: {
             item: true,
-            location: true
-          }
+            location: true,
+          },
+        })
+
+        // Create a transaction record for the stock removal
+        await tx.transaction.create({
+          data: {
+            type: "REMOVE",
+            quantity: item.quantity,
+            itemId: currentStock.itemId,
+            fromLocationId: currentStock.locationId,
+            status: "COMPLETED",
+          },
         })
 
         updates.push(update)
@@ -75,9 +86,9 @@ export async function POST(request: Request) {
     return NextResponse.json(
       {
         error: "Failed to remove stock",
-        details: error.message
+        details: error.message,
       },
       { status: 500 }
     )
   }
-} 
+}

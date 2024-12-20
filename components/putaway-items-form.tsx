@@ -490,13 +490,13 @@ export function PutawayItemsForm({ location }: PutawayItemsFormProps) {
                 <Keyboard className="h-5 w-5" />
               </Button>
             </DialogTrigger>
-            <DialogContent>
+            <DialogContent className="max-w-md p-6 space-y-6">
               <DialogHeader>
-                <DialogTitle>Enter Item Barcode Manually</DialogTitle>
+                <DialogTitle className="text-xl font-semibold">Enter Item Barcode Manually</DialogTitle>
               </DialogHeader>
-              <form onSubmit={handleManualSubmit} className="space-y-4 pt-4">
+              <form onSubmit={handleManualSubmit} className="space-y-4">
                 <div className="space-y-2">
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-sm text-gray-600">
                     Enter the item barcode to add to this location
                   </p>
                   <Input
@@ -505,20 +505,22 @@ export function PutawayItemsForm({ location }: PutawayItemsFormProps) {
                     value={manualBarcodeInput}
                     onChange={(e) => setManualBarcodeInput(e.target.value)}
                     placeholder="Enter barcode..."
-                    className="text-lg"
+                    className="mt-2 w-full text-lg border border-gray-300 rounded-md"
                     autoComplete="off"
                   />
                 </div>
-                <div className="flex justify-end gap-2">
+                <div className="flex justify-end gap-3">
                   <Button
                     type="button"
                     variant="outline"
+                    className="w-24"
                     onClick={() => setIsDialogOpen(false)}
                   >
                     Cancel
                   </Button>
                   <Button
                     type="submit"
+                    className="w-24"
                     disabled={!manualBarcodeInput.trim()}
                   >
                     Add Item

@@ -50,6 +50,9 @@ item_id: Foreign key linking to the Items table.
 from_location_id: Foreign key (nullable) for moves/removals.
 to_location_id: Foreign key (nullable) for moves/additions.
 quantity: Number of units involved in the transaction.
+status: Tracks the state of the transaction (COMPLETED, UNDONE).
+undoneAt: Records the timestamp when the transaction was undone.
+undoneBy: Stores the user who performed the undo operation.
 transaction_type: Type of transaction (e.g., "add", "remove", "move").
 user_id (optional): Identifier for the user performing the transaction.
 Description:

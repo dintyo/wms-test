@@ -38,6 +38,11 @@ export function MainNav({
       active: pathname === "/stock/lookup",
     },
     {
+      href: "/stock/history",
+      label: "Stock History",
+      active: pathname === "/stock/history",
+    },
+    {
       href: "/locations",
       label: "Locations",
       active: pathname === "/locations",

@@ -41,6 +41,10 @@ export function Navbar() {
       label: "Stock Lookup",
     },
     {
+      href: "/stock/history",
+      label: "Stock History",
+    },
+    {
       href: "/locations",
       label: "Locations",
     },

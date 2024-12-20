@@ -246,36 +246,41 @@ export function MoveStockForm() {
                 <Keyboard className="h-5 w-5" />
               </Button>
             </DialogTrigger>
-            <DialogContent>
+            <DialogContent className="max-w-md p-6 space-y-4">
               <DialogHeader>
-                <DialogTitle>Enter Location Code Manually</DialogTitle>
+                <DialogTitle className="text-xl font-semibold">Enter Location Code</DialogTitle>
               </DialogHeader>
-              <form onSubmit={handleManualSubmit} className="space-y-4 pt-4">
-                <div className="space-y-2">
-                  <p className="text-sm text-muted-foreground">
-                    Enter the location code in the format: YY-XX-ZZ (e.g., A-01-02 or AB-01-02)
+              <form onSubmit={handleManualSubmit} className="space-y-6">
+                <div>
+                  <p className="text-sm text-gray-600">
+                    Please enter the location code in the format: <strong>YY-XX-ZZ</strong> (e.g., <code>A-01-02</code> or <code>AB-01-02</code>)
                   </p>
                   <Input
                     ref={manualInputRef}
                     type="text"
                     value={manualBarcodeInput}
                     onChange={(e) => setManualBarcodeInput(e.target.value)}
-                    placeholder="Enter location code..."
-                    className="text-lg"
+                    placeholder="Enter location code"
+                    className="mt-3 w-full text-lg border border-gray-300 rounded-md"
                     autoComplete="off"
                   />
+                  {manualBarcodeInput && !/^[A-Za-z]{1,2}-\d{2}-\d{2}$/.test(manualBarcodeInput) && (
+                    <p className="mt-1 text-sm text-red-500">Invalid format. Please use YY-XX-ZZ.</p>
+                  )}
                 </div>
-                <div className="flex justify-end gap-2">
+                <div className="flex justify-end gap-3">
                   <Button
                     type="button"
                     variant="outline"
+                    className="w-24"
                     onClick={() => setIsDialogOpen(false)}
                   >
                     Cancel
                   </Button>
                   <Button
                     type="submit"
-                    disabled={!manualBarcodeInput.trim()}
+                    className="w-24"
+                    disabled={!/^[A-Za-z]{1,2}-\d{2}-\d{2}$/.test(manualBarcodeInput)}
                   >
                     Continue
                   </Button>
